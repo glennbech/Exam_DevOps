@@ -20,4 +20,4 @@
            aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
            aws-region: eu-west-1
        - run: sam build --use-container
-       - run: sam deploy --no-confirm-changeset --no-fail-on-empty-changeset --stack-name sam-candidate-2025 --s3-bucket candidate2025 --capabilities CAPABILITIES_IAM --region eu-west-1
+       - run: sam deploy --no-confirm-changeset --no-fail-on-empty-changeset --stack-name sam-candidate-2025 --s3-bucket pgr301-sam-bucket --capabilities CAPABILITIES_IAM --region eu-west-1
