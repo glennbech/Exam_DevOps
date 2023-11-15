@@ -1,6 +1,9 @@
 import json
 import boto3
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Denne koden kan også kjøres som en selvstendig applikasjon (Uten SAM) bare gjøre følgende
 # (dersom man har python på maskinen sin altså...)
@@ -16,7 +19,7 @@ s3_client = boto3.client('s3', region_name='eu-west-1')
 rekognition_client = boto3.client('rekognition', region_name='eu-west-1')
 
 # Oppgave 1A
-BUCKET_NAME = "kjellsimagebucker"
+BUCKET_NAME = os.getenv('BUCKET')
 
 def lambda_handler(event, context):
 
