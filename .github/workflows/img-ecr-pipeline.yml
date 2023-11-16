@@ -17,15 +17,13 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: eu-west-1
       
-    - name: Prepare ECR  
-      id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v1
-      
     - name: Build and push to ECR
       env:
-        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        ECR_REGISTRY: 244530008913.dkr.ecr.eu-west-1.amazonaws.com
         ECR_REPOSITORY: candidate2025_ecr_repo
       run: |
+        aws ecr get-login-password --region eu-west-1 | docker login --username AWS --password-stdin 244530008913.dkr.ecr.eu-west-1.amazonaws.com
         rev=$(git rev-parse --short HEAD)
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$rev -t latest .
-        docker push -a $ECR_REGISTRY/ECR_REPOSITORY:$rev
+        docker build -t $ECR_REGISTRY/ECR_REPOSITORY:$rev .
+        docker tag $ECR_REGISTRY/ECR_REPOSITORY:$rev latest
+        docker push -a latest
