@@ -27,5 +27,5 @@ jobs:
         ECR_REPOSITORY: candidate2025_ecr_repo
       run: |
         rev=$(git rev-parse --short HEAD)
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$rev -t latest.
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$rev -t latest .
         docker push $ECR_REGISTRY/ECR_REPOSITORY:$rev latest
