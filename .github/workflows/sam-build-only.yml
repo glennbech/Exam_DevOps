@@ -9,7 +9,7 @@ defaults:
     working-directory: ./kjell
 
 jobs:
-  build-deploy:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
