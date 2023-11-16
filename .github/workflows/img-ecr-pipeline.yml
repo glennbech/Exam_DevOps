@@ -26,4 +26,5 @@ jobs:
         rev=$(git rev-parse --short HEAD)
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$rev .
         docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$rev latest
-        docker push -a $ECR_REGISTRY/$ECR_REPOSITORY:$rev
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$rev
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
