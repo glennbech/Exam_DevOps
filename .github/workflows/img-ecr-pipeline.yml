@@ -25,7 +25,7 @@ jobs:
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         ECR_REPOSITORY: candidate2025_ecr_repo
-        IMAGE_TAG: $(git rev-parse --short "$GITHUB_SHA") latest
+        IMAGE_TAG: $(git rev-parse --short HEAD) latest
       run: |
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
         docker push $ECR_REGISTRY/ECR_REPOSITORY:$IMAGE_TAG
