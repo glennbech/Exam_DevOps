@@ -4,11 +4,11 @@ variable "serv_name"{
 }
 variable "arn"{
   type = string
-  sensitive = true
+  default = "arn:aws:iam::244530008913:role/service-role/AppRunnerECRAccessRole"
 }
 variable "img_id"{
   type = string
-  sensitive = true
+  default = "244530008913.dkr.ecr.eu-west-1.amazonaws.com/candidate2025_ecr_repo:latest"
 }
 variable "names"{
   type = list(string)
