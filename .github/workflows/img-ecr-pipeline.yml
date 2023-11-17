@@ -46,6 +46,7 @@ jobs:
     steps: 
       - name: Check out code
         uses: actions/checkout@v3
+        
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
         
@@ -57,7 +58,9 @@ jobs:
         
       - name: Terraform Plan
         id: plan
-        run: terraform plan -var="arn=$ARN" -var="img_id=$IMAGE" -no-color
+        run: | 
+          cd infra
+          terraform plan -no-color
         continue-on-error: true
         
       - name: Terrafrom Status
@@ -66,4 +69,6 @@ jobs:
         
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        run: terraform apply -auto-approve
+        run: |
+          cd infra
+          terraform apply -auto-approve
