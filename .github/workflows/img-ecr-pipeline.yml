@@ -46,7 +46,8 @@ jobs:
       ARN: arn:aws:iam::244530008913:role/service-role/AppRunnerECRAccessRole
     
     steps: 
-      - uses: actions/checkout@v3
+      - name: Check out code
+        uses: actions/checkout@v3
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
         
