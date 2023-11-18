@@ -1,84 +1,5 @@
 # Eksamen PGR301 2023
 
-## Krav til leveransen
-
-* Eksamensoppgaven, kode og nødvendig filer er tilgjengelig i GitHub-repo: https://github.com/glennbechdevops/eksamen_2023.
-* Når du leverer inn oppgaven via WiseFlow, vennligst opprett et tekstdokument som kun inneholder en kobling til ditt
-  repository.
-* Vennligst bruk et tekstdokumentformat, ikke PDF, Word eller PowerPoint.
-* Du skal ikke opprette en fork av dette repositoryet, men heller kopiere innholdet til et nytt repository.
-* Hvis du er bekymret for plagiat fra medstudenter, kan du arbeide i et privat repository og deretter gjøre det
-  offentlig tilgjengelig like før innleveringsfristen.
-
-Når sensoren evaluerer oppgaven, vil han/hun:
-
-* Sjekke ditt repository og gå til fanen "Actions" på GitHub for å bekrefte at Workflows faktisk fungerer som de skal.
-* Vurdere drøftelsesoppgavene. Du må opprette en "Readme" for besvarelsen i ditt repository. Denne "Readme"-filen skal
-  inneholde en grundig beskrivelse og drøfting av oppgavene.
-* Sensoren vil opprette en "fork" (en kopi) av ditt repository og deretter kjøre GitHub Actions Workflows med sin egen
-  AWS- og GitHub-bruker for å bekrefte at alt fungerer som forventet.
-
-## Om GitHub Free Tier
-
-- I oppgaven blir du bedt om å opprette GitHub Actions Workflows.
-- Med GitHub Free Tier har du 2000 minutter med gratis byggetid per måned i private repository.
-- Hvis du trenger mer byggetid, har du alternativet å gjøre repositoryet offentlig. Dette vil gi
-  deg ubegrenset byggetid. GitHub gir ubegrenset byggetid for offentlige repoer.
-- Hvis du er bekymret for at andre kan kopiere arbeidet ditt når repositoryet er offentlig, kan du opprette en ny
-  GitHub-bruker med et tilfeldig navn for anonymitet.
-
-## Spesielle hensyn knyttet til Cloud 9
-
-- Løsning på problem med diskplassmangel - informasjon blir delt på Canvas-plattformen.
-- Informasjon om rettigheter og sikkerhet i Cloud 9 vil også bli delt på Canvas.
-
-# Evaluering
-
-- Oppgave 1. Kjells Pythonkode - 20 Poeng
-- Oppgave 2. Overgang til Java og Spring Boot - 15 Poeng
-- Oppgave 3. Terraform, AWS Apprunner og IAC - 15 Poeng
-- Oppgave 4. Feedback -30 Poeng
-- Oppgave 5. Drøfteoppgaver - 20 poeng
-
-# Oppgavebeskrivelse
-
-I et pulserende teknologisamfunn på Grünerløkka, Oslo, har en livlig oppstart ved navn 'VerneVokterne' funnet
-sitt eget nisjeområde innenfor helsesektoren. De utvikler banebrytende programvare for bildebehandling som er
-designet
-for å sikre at helsepersonell alltid bruker personlig verneutstyr (PPE). Med en lidenskap for innovasjon og et sterkt
-ønske om å forbedre arbeidssikkerheten, har 'VerneVokterne' samlet et team av dyktige utviklere, engasjerte designere og
-visjonære produktledere.
-
-Selskapet hadde tidligere en veldig sentral utvikler som heter Kjell. Kjell hadde en unik tilnærming til kode,
-Dessverre var kvaliteten på Kjells kode, for å si det pent, "kreativ."
-
-Som nyansatt har du blitt gitt den utfordrende oppgaven å overta etter "Kjell," som ikke lenger er en del av selskapet.
-
-![Logo](img/logo.png "Assignment logo")
-
-# Litt om AWS Rekognition
-
-I denne oppgaven skal dere bli kjent med en ny AWS tjeneste.
-
-AWS Rekognition er en tjeneste fra Amazon Web Services som tilbyr avansert bilde- og videoanalyse ved hjelp av
-maskinlæringsteknologi. Den har en rekke funksjoner for å gjenkjenne og analysere ulike elementer i bilder og videoer,
-inkludert ansiktsgjenkjenning, objektgjenkjenning, tekstgjenkjenning og mer.
-
-AWS Rekognition kan brukes til å identifisere om personer på bilder eller i videoer bruker riktig personlig
-beskyttelsesutstyr som hjelmer, vernebriller,
-hansker og verneklær. Dette kan være spesielt nyttig i situasjoner der det er viktig å sikre at arbeidere eller
-besøkende følger sikkerhetskravene, for eksempel i byggebransjen, industrielle anlegg eller helsevesenet.
-
-Tjenesten kan også tilpasse seg ulike bransjer og bruksområder ved å tillate brukerne å lage
-egendefinerte modeller basert på sine egne datasett og krav.
-
-For å bruke AWS Rekognition for PPE-deteksjon, laster du enkelt opp bilder eller videoer til tjenesten, og den vil
-deretter analysere innholdet og gi deg informasjon om hvorvidt PPE er tilstede og eventuelt gi posisjonsdata for hvor
-PPE er funnet.
-
-Bruk gjerne litt tid til å bli kjent med tjenesten i AWS
-miljøet https://eu-west-1.console.aws.amazon.com/rekognition/home
-
 # Oppgave 1. Kjell's Python kode
 
 ## A. SAM & GitHub actions workflow
@@ -103,6 +24,11 @@ Advarsel! Se opp for hardkoding ! Du må kanskje endre noe for å få deployet s
 * Sensor vil lage en fork av ditt repository. Forklar hva sensor må gjøre for å få GitHub Actions workflow til å kjøre i
   sin egen GitHub-konto.
 
+## Getting Actions to run
+* To make the actions run properly you have to add IAM Keys to github secrets with the following format:
+* Name: AWS_ACCESS_KEY_ID and then the key id as the secret
+* Name: AWS_SECRET_ACCESS_KEY and then the secret key as the secret
+
 ## B. Docker container
 
 Python er ikke et veldig etablert språk i VerneVokterene, og du vil gjerne at utviklere som ikke har Python
@@ -112,15 +38,15 @@ installert på sin maskin skal kunne teste koden.
 
 Lag en Dockerfile som bygger et container image du kan bruke for å kjøre python koden.
 
-Dockerfilen skal lages i mappen ```/kjell/hello_world```. Sensor skal kunne gjøre følgende kommando for å bygge et
-container image og kjøre koden.
+Dockerfilen skal lages i mappen ```/kjell/hello_world```.
 
+* To make app.py run properly you will have to add a .env file in the root directory containing the line BUCKET_NAME= (insert the name of your bucket here)
+
+Run the command 
 ```shell
 docker build -t kjellpy . 
 docker run -e AWS_ACCESS_KEY_ID=XXX -e AWS_SECRET_ACCESS_KEY=YYY -e BUCKET_NAME=kjellsimagebucket kjellpy
 ```
-
-Det ligger noen hint i filen app.py som vil hjelpe deg med å lage en ```Dockerfile```.
 
 # Oppgave 2. Overgang til Java og Spring boot
 
@@ -128,53 +54,6 @@ Du innser raskt at Python ikke er veien videre for et konkurransedyktig produkt 
 Java-applikasjon som ligger i dette repoet. Applikasjonen er en Spring Boot applikasjon, som eksponerer et endepunkt
 
 ```http://<host>:<port>/scan-ppe?bucketName=<bucketnavn>```
-
-Som du vil se bearbeider java-koden response fra tjenesten Rekognition litt mer en hva Python-varianten gjør.
-En respons fra Java-applikasjonen kan se slik ut
-
-```shell
-{
-    "bucketName": "kjellsimagebucket",
-    "results": [
-        {
-            "fileName": "Man-in-PPE-kit-307511-pixahive.jpg",
-            "violation": false,
-            "personCount": 1
-        },
-        {
-            "fileName": "almost_ppe.jpeg",
-            "violation": false,
-            "personCount": 1
-        },
-        {
-            "fileName": "download.jpeg",
-            "violation": true,
-            "personCount": 1
-        },
-        {
-            "fileName": "one_person_ppe.jpeg",
-            "violation": false,
-            "personCount": 1
-        },
-        {
-            "fileName": "personnel-with-the-united-states-public-health-service-34a5d6-1024.jpg",
-            "violation": false,
-            "personCount": 2
-        },
-        {
-            "fileName": "two_persons_one_no_ppe.jpeg",
-            "violation": true,
-            "personCount": 2
-        }
-    ]
-}
-```
-
-Vi får tilbake ett JSON-objekt per fil i S3 Bucketen som inneholder følgende attributter
-
-* Filename - Navnet på filen i S3 bucketen
-* violation - true hvis det er person, eller personer på bildet uten nødvendig utstyr
-* personCount - hvor mange personer Rekognition fant på bildet.
 
 ## A. Dockerfile
 
@@ -210,6 +89,7 @@ Lag en ny GitHub Actions Workflow fil, ikke gjenbruk den du lagde for Pythonkode
 * Container image skal ha en tag som er lik commit-hash i Git, for eksempel: ```glenn-ppe:b2572585e```.
 * Den siste versjonen av container image som blir pushet til ECR, skal i tillegg få en tag "latest".
 
+
 # Oppgave 3- Terraform, AWS Apprunner og Infrastruktur som kode
 
 Se på koden som ligger i infra katalogen, den inneholder kun en app_runner_service og en IAM roller som gjør denne i
@@ -229,6 +109,49 @@ stand til å gjøre API kall mot AWS Rekognition og lese fra S3.
 * Du må lege til Terraform provider og backend-konfigurasjon. Dette har Kjell glemt. Du kan bruke samme S3 bucket
   som vi har brukt til det formålet i øvingene.
 * Beskriv også hvilke endringer, om noen, sensor må gjøre i sin fork, GitHub Actions workflow eller kode for å få denne til å kjøre i sin fork.
+
+## Assumptions and Running task 3
+
+I have assumed that "access_role_arn" and "image_identifier" (variables arn and img_id) aren't sensitive, as I could not find a consistent consensus online.
+If they are I would put them in a .tfvars file and add them as github secrets.
+
+* The program needs the AWS IAM keys that was added as GitHub secrets earlier.
+* To get the program to run properly you need to have an existing ECR Repository. You will have to replace the current variable "img_id" in variables.tf with the location of this repository. You can find the location by accessing the repo via AWS Elastic Container Registry
+* You will also need to change the ECR_REGISTRY and ECR_REPOSITORY in img-ecr-pipeline.yml where ECR_REGISTRY needs to be (xxx.dkr.ecr.<region>.amazonaws.com), and ECR_REPOSITORY needs to be the name of your ECR repository
+* Furthermore you will have to change the variable "arn" in variables.tf to your instance of the AppRunnerECRAccessRole, which you can copy from roles in the IAM part of AWS
+
+Når sensoren evaluerer oppgaven, vil han/hun:
+
+* Sjekke ditt repository og gå til fanen "Actions" på GitHub for å bekrefte at Workflows faktisk fungerer som de skal.
+* Vurdere drøftelsesoppgavene. Du må opprette en "Readme" for besvarelsen i ditt repository. Denne "Readme"-filen skal
+  inneholde en grundig beskrivelse og drøfting av oppgavene.
+* Sensoren vil opprette en "fork" (en kopi) av ditt repository og deretter kjøre GitHub Actions Workflows med sin egen
+  AWS- og GitHub-bruker for å bekrefte at alt fungerer som forventet.
+
+# Evaluering
+
+- Oppgave 1. Kjells Pythonkode - 20 Poeng
+- Oppgave 2. Overgang til Java og Spring Boot - 15 Poeng
+- Oppgave 3. Terraform, AWS Apprunner og IAC - 15 Poeng
+- Oppgave 4. Feedback -30 Poeng
+- Oppgave 5. Drøfteoppgaver - 20 poeng
+
+# Oppgavebeskrivelse
+
+I et pulserende teknologisamfunn på Grünerløkka, Oslo, har en livlig oppstart ved navn 'VerneVokterne' funnet
+sitt eget nisjeområde innenfor helsesektoren. De utvikler banebrytende programvare for bildebehandling som er
+designet
+for å sikre at helsepersonell alltid bruker personlig verneutstyr (PPE). Med en lidenskap for innovasjon og et sterkt
+ønske om å forbedre arbeidssikkerheten, har 'VerneVokterne' samlet et team av dyktige utviklere, engasjerte designere og
+visjonære produktledere.
+
+Selskapet hadde tidligere en veldig sentral utvikler som heter Kjell. Kjell hadde en unik tilnærming til kode,
+Dessverre var kvaliteten på Kjells kode, for å si det pent, "kreativ."
+
+Som nyansatt har du blitt gitt den utfordrende oppgaven å overta etter "Kjell," som ikke lenger er en del av selskapet.
+
+![Logo](img/logo.png "Assignment logo")
+
 
 # Oppgave 4. Feedback
 
@@ -271,7 +194,7 @@ Alarmen skal lages ved hjelp av Terraformkode. Koden skal lages som en separat T
 hardkoding  av verdier i modulen for maksimal gjenbrukbarhet. Pass samtidig på at brukere av modulen ikke må sette mange
 variabler når de inkluderer den i koden sin.
 
-# Oppgave 4. Drøfteoppgaver
+# Oppgave 5. Drøfteoppgaver
 
 ## Det Første Prinsippet - Flyt
 
