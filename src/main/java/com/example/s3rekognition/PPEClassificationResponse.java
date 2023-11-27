@@ -37,4 +37,23 @@ public class PPEClassificationResponse  implements Serializable  {
     public void setPersonCount(int personCount) {
         this.personCount = personCount;
     }
+    
+    //#######################################################################################################################
+    
+    private int violationCount;
+    
+    public PPEClassificationResponse(String fileName, int personCount, boolean violation, int violationCount) {
+        this.fileName = fileName;
+        this.personCount = personCount;
+        this.violation = violation;
+        this.violationCount = violationCount;
+    }
+    
+    public int getViolationCount() {
+        return violationCount;
+    }
+
+    public void setViolationCount(int violationCount) {
+        this.violationCount = violationCount;
+    }
 }

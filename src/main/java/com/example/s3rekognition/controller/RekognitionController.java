@@ -31,7 +31,8 @@ public class RekognitionController implements ApplicationListener<ApplicationRea
         this.s3Client = AmazonS3ClientBuilder.standard().build();
         this.rekognitionClient = AmazonRekognitionClientBuilder.standard().build();
     }
-
+    int violationCount;
+    boolean violationBool;
     /**
      * This endpoint takes an S3 bucket name in as an argument, scans all the
      * Files in the bucket for Protective Gear Violations.
@@ -80,7 +81,138 @@ public class RekognitionController implements ApplicationListener<ApplicationRea
         PPEResponse ppeResponse = new PPEResponse(bucketName, classificationResponses);
         return ResponseEntity.ok(ppeResponse);
     }
+//###################################################################################################################################
+    @GetMapping(value = "/scan-medical", consumes = "*/*", produces = "application/json")
+    @ResponseBody
+    public ResponseEntity<PPEResponse> scanForMedicalPPE(@RequestParam String bucketName) {
+        // List all objects in the S3 bucket
+        ListObjectsV2Result imageList = s3Client.listObjectsV2(bucketName);
 
+        // This will hold all of our classifications
+        List<PPEClassificationResponse> classificationResponses = new ArrayList<>();
+
+        // This is all the images in the bucket
+        List<S3ObjectSummary> images = imageList.getObjectSummaries();
+
+        // Iterate over each object and scan for PPE
+        for (S3ObjectSummary image : images) {
+            logger.info("scanning " + image.getKey());
+            violationCount = 0;
+            // This is where the magic happens, use AWS rekognition to detect PPE
+            DetectProtectiveEquipmentRequest request = new DetectProtectiveEquipmentRequest()
+                    .withImage(new Image()
+                            .withS3Object(new S3Object()
+                                    .withBucket(bucketName)
+                                    .withName(image.getKey())))
+                    .withSummarizationAttributes(new ProtectiveEquipmentSummarizationAttributes()
+                            .withMinConfidence(80f)
+                            .withRequiredEquipmentTypes("HAND_COVER", "FACE_COVER"));
+
+            DetectProtectiveEquipmentResult result = rekognitionClient.detectProtectiveEquipment(request);
+
+            // If any person on an image lacks PPE on the face, it's a violation of regulations
+            boolean violation = isViolationMedical(result);
+            
+            List <ProtectiveEquipmentPerson> persons = result.getPersons();
+            
+            for(ProtectiveEquipmentPerson person: persons){
+                
+                List<ProtectiveEquipmentBodyPart> bodyParts=person.getBodyParts();
+                
+                if (bodyParts.isEmpty()){
+                    System.out.println("\tNo body parts detected");
+                } else
+                    for (ProtectiveEquipmentBodyPart bodyPart: bodyParts) {
+                        violationBool = false;
+                        switch(bodyPart.getName()){
+                            case "LEFT_HAND": 
+                                violationBool = bodyPart.getEquipmentDetections().isEmpty();
+                                break;
+                            case "RIGHT_HAND":
+                                violationBool = bodyPart.getEquipmentDetections().isEmpty();
+                                break;
+                            case "FACE":
+                                violationBool = bodyPart.getEquipmentDetections().isEmpty();
+                                break;
+                            default: violationBool = false;
+                        }
+                        if (violationBool){
+                            violationCount++;
+                        }
+                    }
+            }
+            logger.info("scanning " + image.getKey() + ", violation result " + violation + ", violation count " + violationCount);
+            // Categorize the current image as a violation or not.
+            int personCount = result.getPersons().size();
+            PPEClassificationResponse classification = new PPEClassificationResponse(image.getKey(), personCount, violation, violationCount);
+            classificationResponses.add(classification);
+        }
+        PPEResponse ppeResponse = new PPEResponse(bucketName, classificationResponses);
+        return ResponseEntity.ok(ppeResponse);
+    }
+    
+    @GetMapping(value = "/scan-construction", consumes = "*/*", produces = "application/json")
+    @ResponseBody
+    public ResponseEntity<PPEResponse> scanForConstructionPPE(@RequestParam String bucketName) {
+        // List all objects in the S3 bucket
+        ListObjectsV2Result imageList = s3Client.listObjectsV2(bucketName);
+
+        // This will hold all of our classifications
+        List<PPEClassificationResponse> classificationResponses = new ArrayList<>();
+
+        // This is all the images in the bucket
+        List<S3ObjectSummary> images = imageList.getObjectSummaries();
+
+        // Iterate over each object and scan for PPE
+        for (S3ObjectSummary image : images) {
+            logger.info("scanning " + image.getKey());
+            violationCount = 0;
+            // This is where the magic happens, use AWS rekognition to detect PPE
+            DetectProtectiveEquipmentRequest request = new DetectProtectiveEquipmentRequest()
+                    .withImage(new Image()
+                            .withS3Object(new S3Object()
+                                    .withBucket(bucketName)
+                                    .withName(image.getKey())))
+                    .withSummarizationAttributes(new ProtectiveEquipmentSummarizationAttributes()
+                            .withMinConfidence(80f)
+                            .withRequiredEquipmentTypes("HEAD_COVER", "FACE_COVER"));
+
+            DetectProtectiveEquipmentResult result = rekognitionClient.detectProtectiveEquipment(request);
+
+            // If any person on an image lacks PPE on the face, it's a violation of regulations
+            boolean violation = isViolationConstruction(result);
+            
+            List <ProtectiveEquipmentPerson> persons = result.getPersons();
+            for(ProtectiveEquipmentPerson person: persons){
+                List<ProtectiveEquipmentBodyPart> bodyParts=person.getBodyParts();
+                if (bodyParts.isEmpty()){
+                    System.out.println("\tNo body parts detected");
+                } else
+                    for (ProtectiveEquipmentBodyPart bodyPart: bodyParts) {
+                        violationBool = false;
+                        switch(bodyPart.getName()){
+                            case "HEAD": 
+                                violationBool = bodyPart.getEquipmentDetections().isEmpty();
+                                break;
+                            case "FACE":
+                                violationBool = bodyPart.getEquipmentDetections().isEmpty();
+                                break;
+                            default: violationBool = false;
+                        }
+                        if (violationBool){
+                            violationCount++;
+                        }
+                    }
+            }
+            logger.info("scanning " + image.getKey() + ", violation result " + violation + ", violation count " + violationCount);
+            // Categorize the current image as a violation or not.
+            int personCount = result.getPersons().size();
+            PPEClassificationResponse classification = new PPEClassificationResponse(image.getKey(), personCount, violation, violationCount);
+            classificationResponses.add(classification);
+        }
+        PPEResponse ppeResponse = new PPEResponse(bucketName, classificationResponses);
+        return ResponseEntity.ok(ppeResponse);
+    }
     /**
      * Detects if the image has a protective gear violation for the FACE bodypart-
      * It does so by iterating over all persons in a picture, and then again over
@@ -95,6 +227,22 @@ public class RekognitionController implements ApplicationListener<ApplicationRea
                 .flatMap(p -> p.getBodyParts().stream())
                 .anyMatch(bodyPart -> bodyPart.getName().equals("FACE")
                         && bodyPart.getEquipmentDetections().isEmpty());
+    }
+    private static boolean isViolationMedical(DetectProtectiveEquipmentResult result) {
+        return result.getPersons().stream()
+                .flatMap(p -> p.getBodyParts().stream())
+                .anyMatch(bodyPart -> bodyPart.getName().equals("FACE")
+                        && bodyPart.getEquipmentDetections().isEmpty() || bodyPart.getName().equals("LEFT_HAND")
+                        && bodyPart.getEquipmentDetections().isEmpty() || bodyPart.getName().equals("RIGHT_HAND")
+                        && bodyPart.getEquipmentDetections().isEmpty());
+    }
+    private static boolean isViolationConstruction(DetectProtectiveEquipmentResult result){
+        boolean violation = result.getPersons().stream()
+                .flatMap(p -> p.getBodyParts().stream())
+                .anyMatch(bodyPart -> bodyPart.getName().equals("FACE")
+                        && bodyPart.getEquipmentDetections().isEmpty() || bodyPart.getName().equals("HEAD")
+                        && bodyPart.getEquipmentDetections().isEmpty());
+        return violation;
     }
 
 

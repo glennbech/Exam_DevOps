@@ -41,6 +41,7 @@ Lag en Dockerfile som bygger et container image du kan bruke for å kjøre pytho
 Dockerfilen skal lages i mappen ```/kjell/hello_world```.
 
 * To make app.py run properly you will have to add a .env file in the root directory containing the line BUCKET_NAME= (insert the name of your bucket here)
+* You will also have to run the following command while in the kjell/hello_world directory to have docker run the correct dockerfile
 
 Run the command 
 ```shell
@@ -207,6 +208,12 @@ vennligst inkluder:
 - Fordelene med å bruke CI i et utviklingsprosjekt - hvordan CI kan forbedre kodekvaliteten og effektivisere utviklingsprosessen.
 - Hvordan jobber vi med CI i GitHub rent praktisk? For eskempel i et utviklingsteam på fire/fem utivklere?
 
+Continuous Integration, also known as CI, is a software development practice aiming to improve the quality and efficiency of code by frequently merging code changes into a central repository, after which automated builds and tests are run.
+This method of development avoids long periods of development without integration, improves the quality of the code and reduces the overall time it takes to find and address bugs. 
+CI relies heavily on version control systems like git to manage and track the changes to the codebase, with a team of developers usually working on branches until the feature they are working on can be considered ready, after which they merge that branch into the main or master branch.
+When such a merge is initiated it will be reviewed by a peer to ensure the quality of the code. Should a build or test fail, or a mistake by a developer accidentally take down the application, the development team will be alerted and able to immediatly start working on bringing it back to a "green" state.
+By relying on commiting many frequent and smaller code changes, tracing the root causes of issues and reducing difficult to trace bugs becomes easier.
+
 ### B. Sammenligning av Scrum/Smidig og DevOps fra et Utviklers Perspektiv
 
 I denne oppgaven skal du som utvikler reflektere over og sammenligne to sentrale metodikker i moderne
@@ -220,21 +227,49 @@ leveransetempoet i utvikling av programvare.
 - Beskriv kort, hovedtrekkene i Scrum metodikk og dens tilnærming til programvareutvikling.
 - Diskuter eventuelle utfordringer og styrker ved å bruke Scrum/Smidig i programvareutviklingsprosjekter.
 
+Scrum is a software development method that aims to break work into smaller goals to be completed over a certain timeframe commonly called sprints. Each sprint is planned out beforehand, where the goal and backlog of the sprint is planned.
+The development team has a daily meeting known as "Daily Scrums" to assess the current progress and observe what needs to be prioritized.
+At the end of each sprint cycle, a review is held with stakeholders to liaise with them on feedback expectations and coming plans. The result of the sprint is then demonstrated who is informed about works in progress.
+A further meeting is held internally amongst the team to analyze the strengths and weaknesses of the completed sprint, and future areas of improvements, after which the process begins anew.
+This method allows for flexibility and continuous feedback, and by bringing in a decision-making authority to the operational level the team can reprioritize tasks based on customer requirements.
+However this method of development isn't without it's flaws. The time spent conducting meetings such as daily scrum, usually conducted over the span of a maximum of 15 minutes, can often surpass their timeboxing, which takes away time that could be used for more productive work like further developing the product.
+The Scrum model of work may also pose problems for a number of different teams, like teams that are geographically distant from eachother, work part time or have highly specialized members.
+
 2. **DevOps Metodikk:**
 
 - Forklar grunnleggende prinsipper og praksiser i DevOps, spesielt med tanke på integrasjonen av utvikling og drift.
 - Analyser hvordan DevOps kan påvirke kvaliteten og leveransetempoet i programvareutvikling.
 - Reflekter over styrker og utfordringer knyttet til bruk av DevOps i utviklingsprosjekter.
 
+The DevOps work model integrates the development team and the operations team into a single team of engineers work across the entire application lifcycle.
+One of the fundamental practices of DevOps is the constant flow of frequent, but small updates in the form of Continuous Integration. Through Continuous Delivery these changes are automatically built, tested and prepared for release. They are then deployed to a environment for testing and/or deployment.
+CI/CD is some of the most important principles within DevOps, but is not all of it. DevOps also contains the concept of Infrastructure as Code, which is a practice where infrastructure is prepared and managed with code and version control, through cloud API-models.
+Another aspect of DevOps is the capture, monitoring and analysis of data and logs gathered from applications and infrastructure. This focus on monitoring and logging allows for insights into how users perceives and is impacted by changes and updates.
+ The DevOps work model may increase code quality due to the frequent updates allowing for easier tracing of potential bugs, and also increase the delivery pace of the development team since there is an emphasis on smaller commits, which will allow the changes to be deployed more frequently.
+DevOps overall is a robust and quality focused work model which allows for a continuous stream of changes, able to build a quality product from the ground up. However, it is difficult to transition an existing project to the DevOps model, which is its greatest difficulty.
+
 3. **Sammenligning og Kontrast:**
 
 - Sammenlign Scrum/Smidig og DevOps i forhold til deres påvirkning på programvarekvalitet og leveransetempo.
 - Diskuter hvilke aspekter ved hver metodikk som kan være mer fordelaktige i bestemte utviklingssituasjoner.
 
-#### Forventninger til Besvarelsen
+Agile methodologies such as Scrum prioritize iterative development cycles with an emphasis on regular feedback which allows for early detection and correction of potential issues, improving alignment with the customer's vison.
+Through close collaboration with stakeholders and customers, the understanding of the customer requirements will increase, and help meeting said requirements, which in turn will increase customer satisfaction.
+This close collaboration with stakeholders and the iterative nature of Agile allows it to rapidly adapt to changing requirements during the development process.
+It is however this reliance of feedback that is one of its greatest drawbacks, as it creates an dependency on the continuous feedback which can lead to delays in addressing issues if not recieved in a timely manner.
+It may also be vulnerable to scope creep in the case of constantly changing requirements going out of control, which can negatively impact the delivery timelines and lead to delays.
 
-- Din analyse bør være balansert, kritisk og godt underbygget med eksempler eller teoretiske argumenter.
-- Reflekter over egne erfaringer eller hypotetiske scenarier for å støtte dine argumenter og konklusjoner.
+DevOps practices, on the other hand has a large emphasis on automation and Continuous Integration, which can assist in remedying integration issues earlier in the development process. 
+Adding to this, the focus on automated testing ensures a consistent evaluation of code quality, which lessens the chance of introducing bugs into the code.
+The focus on automation and collaboration allows it to facilitate rapid and frequent releases, with the automation of repetitive tasks reducing the chanses of human error and accelerating the overall delivery process.
+Implementing DevOps practices may however prove challenging, especially for existing projects, as it requires significant groundwork for its implementation. This may require significant changes to existing processes and may lead challenges for the team.
+The teams may face a learning curve while adopting the new tools and practices necessary for the successful implementation of DevOps, which lead to inital slowdowns in productivity until everyone is brought up to speed. 
+
+Overall they both have their strengths and weaknesses, with DevOps focusing on faster and continous integration, delivery and development, while Agile focuses on iterative development and feedback to meet customer expectations.
+Which one to choose depends heavily on the project and which stage of development it is in.
+I would not bring DevOps methodology into an already existing project that wasn't employing it, but rather go for Agile. This is because Agile doesn't require much in terms of a technical aspect, but relies more on development structure and work ethics, as opposed to DevOps which has a steep technical requirement which would cause a large slowdown in productivity.
+In the event that I was partaking in a new project, I would likely go for the DevOps approach as it allows the enforcement of higher quality code from the get-go, provided that the tests also were of sufficient quality.
+This is not to discount the quality of Agile, as I believe a combination of the two has great potential, with the DevOps aspect ensuring quality and regular deliveries, while tight cooperation with the customer/stakeholders will keep the project in line with their vision.
 
 ### C. Det Andre Prinsippet - Feedback
 
