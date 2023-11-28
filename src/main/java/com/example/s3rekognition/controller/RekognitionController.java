@@ -1,5 +1,7 @@
 package com.example.s3rekognition.controller;
 
+import io.micrometer.core.instrument.Timer;
+import io.micrometer.core.instrument.MeterRegistry;
 import com.amazonaws.services.rekognition.AmazonRekognition;
 import com.amazonaws.services.rekognition.AmazonRekognitionClientBuilder;
 import com.amazonaws.services.rekognition.model.*;
@@ -9,6 +11,8 @@ import com.amazonaws.services.s3.model.ListObjectsV2Result;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.example.s3rekognition.PPEClassificationResponse;
 import com.example.s3rekognition.PPEResponse;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.http.ResponseEntity;
@@ -24,12 +28,15 @@ public class RekognitionController implements ApplicationListener<ApplicationRea
 
     private final AmazonS3 s3Client;
     private final AmazonRekognition rekognitionClient;
+    private MeterRegistry meterRegistry;
 
     private static final Logger logger = Logger.getLogger(RekognitionController.class.getName());
 
-    public RekognitionController() {
+    @Autowired
+    public RekognitionController(MeterRegistry meterRegistry) {
         this.s3Client = AmazonS3ClientBuilder.standard().build();
         this.rekognitionClient = AmazonRekognitionClientBuilder.standard().build();
+        this.meterRegistry = meterRegistry;
     }
     int violationCount;
     boolean violationBool;
@@ -82,78 +89,16 @@ public class RekognitionController implements ApplicationListener<ApplicationRea
         return ResponseEntity.ok(ppeResponse);
     }
 //###################################################################################################################################
-    @GetMapping(value = "/scan-medical", consumes = "*/*", produces = "application/json")
-    @ResponseBody
-    public ResponseEntity<PPEResponse> scanForMedicalPPE(@RequestParam String bucketName) {
-        // List all objects in the S3 bucket
-        ListObjectsV2Result imageList = s3Client.listObjectsV2(bucketName);
-
-        // This will hold all of our classifications
-        List<PPEClassificationResponse> classificationResponses = new ArrayList<>();
-
-        // This is all the images in the bucket
-        List<S3ObjectSummary> images = imageList.getObjectSummaries();
-
-        // Iterate over each object and scan for PPE
-        for (S3ObjectSummary image : images) {
-            logger.info("scanning " + image.getKey());
-            violationCount = 0;
-            // This is where the magic happens, use AWS rekognition to detect PPE
-            DetectProtectiveEquipmentRequest request = new DetectProtectiveEquipmentRequest()
-                    .withImage(new Image()
-                            .withS3Object(new S3Object()
-                                    .withBucket(bucketName)
-                                    .withName(image.getKey())))
-                    .withSummarizationAttributes(new ProtectiveEquipmentSummarizationAttributes()
-                            .withMinConfidence(80f)
-                            .withRequiredEquipmentTypes("HAND_COVER", "FACE_COVER"));
-
-            DetectProtectiveEquipmentResult result = rekognitionClient.detectProtectiveEquipment(request);
-
-            // If any person on an image lacks PPE on the face, it's a violation of regulations
-            boolean violation = isViolationMedical(result);
-            
-            List <ProtectiveEquipmentPerson> persons = result.getPersons();
-            
-            for(ProtectiveEquipmentPerson person: persons){
-                
-                List<ProtectiveEquipmentBodyPart> bodyParts=person.getBodyParts();
-                
-                if (bodyParts.isEmpty()){
-                    System.out.println("\tNo body parts detected");
-                } else
-                    for (ProtectiveEquipmentBodyPart bodyPart: bodyParts) {
-                        violationBool = false;
-                        switch(bodyPart.getName()){
-                            case "LEFT_HAND": 
-                                violationBool = bodyPart.getEquipmentDetections().isEmpty();
-                                break;
-                            case "RIGHT_HAND":
-                                violationBool = bodyPart.getEquipmentDetections().isEmpty();
-                                break;
-                            case "FACE":
-                                violationBool = bodyPart.getEquipmentDetections().isEmpty();
-                                break;
-                            default: violationBool = false;
-                        }
-                        if (violationBool){
-                            violationCount++;
-                        }
-                    }
-            }
-            logger.info("scanning " + image.getKey() + ", violation result " + violation + ", violation count " + violationCount);
-            // Categorize the current image as a violation or not.
-            int personCount = result.getPersons().size();
-            PPEClassificationResponse classification = new PPEClassificationResponse(image.getKey(), personCount, violation, violationCount);
-            classificationResponses.add(classification);
-        }
-        PPEResponse ppeResponse = new PPEResponse(bucketName, classificationResponses);
-        return ResponseEntity.ok(ppeResponse);
-    }
+    public double facePPEViolation;
+    public double headPPEViolation;
+    public double handPPEViolation;
+    public double imageCount;
     
-    @GetMapping(value = "/scan-construction", consumes = "*/*", produces = "application/json")
+    public boolean violation;
+    
+    @GetMapping(value = "/scan-all", consumes = "*/*", produces = "application/json")
     @ResponseBody
-    public ResponseEntity<PPEResponse> scanForConstructionPPE(@RequestParam String bucketName) {
+    public ResponseEntity<PPEResponse> scanForGeneralPPE(@RequestParam String bucketName) {
         // List all objects in the S3 bucket
         ListObjectsV2Result imageList = s3Client.listObjectsV2(bucketName);
 
@@ -165,6 +110,7 @@ public class RekognitionController implements ApplicationListener<ApplicationRea
 
         // Iterate over each object and scan for PPE
         for (S3ObjectSummary image : images) {
+            Timer.Sample timer = Timer.start(meterRegistry);
             logger.info("scanning " + image.getKey());
             violationCount = 0;
             // This is where the magic happens, use AWS rekognition to detect PPE
@@ -175,41 +121,48 @@ public class RekognitionController implements ApplicationListener<ApplicationRea
                                     .withName(image.getKey())))
                     .withSummarizationAttributes(new ProtectiveEquipmentSummarizationAttributes()
                             .withMinConfidence(80f)
-                            .withRequiredEquipmentTypes("HEAD_COVER", "FACE_COVER"));
+                            .withRequiredEquipmentTypes("HAND_COVER", "FACE_COVER", "HEAD_COVER"));
 
             DetectProtectiveEquipmentResult result = rekognitionClient.detectProtectiveEquipment(request);
 
-            // If any person on an image lacks PPE on the face, it's a violation of regulations
-            boolean violation = isViolationConstruction(result);
+            // If any person on an image lacks PPE, it's a violation of regulations
+            
             
             List <ProtectiveEquipmentPerson> persons = result.getPersons();
+            
             for(ProtectiveEquipmentPerson person: persons){
-                List<ProtectiveEquipmentBodyPart> bodyParts=person.getBodyParts();
-                if (bodyParts.isEmpty()){
-                    System.out.println("\tNo body parts detected");
-                } else
-                    for (ProtectiveEquipmentBodyPart bodyPart: bodyParts) {
-                        violationBool = false;
-                        switch(bodyPart.getName()){
-                            case "HEAD": 
-                                violationBool = bodyPart.getEquipmentDetections().isEmpty();
-                                break;
-                            case "FACE":
-                                violationBool = bodyPart.getEquipmentDetections().isEmpty();
-                                break;
-                            default: violationBool = false;
-                        }
-                        if (violationBool){
-                            violationCount++;
-                        }
-                    }
+                
+                int facePPE = isViolationFace(result);
+                int headPPE = isViolationHead(result);
+                int handPPE = isViolationHands(result);
+                if (0 < facePPE || 0 < headPPE || 0 < handPPE){
+                    facePPEViolation += facePPE;
+                    headPPEViolation += headPPE;
+                    handPPEViolation += handPPE;
+                    violation = true;
+                }
             }
             logger.info("scanning " + image.getKey() + ", violation result " + violation + ", violation count " + violationCount);
             // Categorize the current image as a violation or not.
             int personCount = result.getPersons().size();
             PPEClassificationResponse classification = new PPEClassificationResponse(image.getKey(), personCount, violation, violationCount);
             classificationResponses.add(classification);
+        
+            meterRegistry.counter("people_scanned").increment(personCount);
+            timer.stop(meterRegistry.timer("image_scan_duration"));
+            
+            meterRegistry.counter("violation_face").increment(facePPEViolation);
+            meterRegistry.counter("violation_head").increment(headPPEViolation);
+            meterRegistry.counter("violation_hands").increment(handPPEViolation);
+            meterRegistry.counter("total_PPE_violations").increment(facePPEViolation+headPPEViolation+handPPEViolation);
+            meterRegistry.counter("avg_face").increment(facePPEViolation);
+            meterRegistry.counter("avg_head").increment(headPPEViolation);
+            meterRegistry.counter("avg_hands").increment(handPPEViolation);
+            meterRegistry.counter("img_scanned").increment(images.size());
         }
+        
+        
+        
         PPEResponse ppeResponse = new PPEResponse(bucketName, classificationResponses);
         return ResponseEntity.ok(ppeResponse);
     }
@@ -228,26 +181,47 @@ public class RekognitionController implements ApplicationListener<ApplicationRea
                 .anyMatch(bodyPart -> bodyPart.getName().equals("FACE")
                         && bodyPart.getEquipmentDetections().isEmpty());
     }
-    private static boolean isViolationMedical(DetectProtectiveEquipmentResult result) {
-        return result.getPersons().stream()
+    
+    //#####################################################################################################
+    
+    private static int isViolationFace(DetectProtectiveEquipmentResult result) {
+        boolean b = result.getPersons().stream()
                 .flatMap(p -> p.getBodyParts().stream())
                 .anyMatch(bodyPart -> bodyPart.getName().equals("FACE")
-                        && bodyPart.getEquipmentDetections().isEmpty() || bodyPart.getName().equals("LEFT_HAND")
+                        && bodyPart.getEquipmentDetections().isEmpty());
+        int i = 0;
+        if(b){
+            i = 1;
+        }
+        return i;
+    }
+    private static int isViolationHead(DetectProtectiveEquipmentResult result) {
+        boolean b = result.getPersons().stream()
+                .flatMap(p -> p.getBodyParts().stream())
+                .anyMatch(bodyPart -> bodyPart.getName().equals("HEAD")
+                        && bodyPart.getEquipmentDetections().isEmpty());
+        int i = 0;
+        if(b){
+            i = 1;
+        }
+        return i; 
+    }
+    private static int isViolationHands(DetectProtectiveEquipmentResult result) {
+        boolean b = result.getPersons().stream()
+                .flatMap(p -> p.getBodyParts().stream())
+                .anyMatch(bodyPart -> bodyPart.getName().equals("LEFT_HAND")
                         && bodyPart.getEquipmentDetections().isEmpty() || bodyPart.getName().equals("RIGHT_HAND")
                         && bodyPart.getEquipmentDetections().isEmpty());
+        int i = 0;
+        if(b){
+            i = 1;
+        }
+        return i; 
     }
-    private static boolean isViolationConstruction(DetectProtectiveEquipmentResult result){
-        boolean violation = result.getPersons().stream()
-                .flatMap(p -> p.getBodyParts().stream())
-                .anyMatch(bodyPart -> bodyPart.getName().equals("FACE")
-                        && bodyPart.getEquipmentDetections().isEmpty() || bodyPart.getName().equals("HEAD")
-                        && bodyPart.getEquipmentDetections().isEmpty());
-        return violation;
-    }
-
+    
+    
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent applicationReadyEvent) {
-
     }
 }

@@ -278,4 +278,9 @@ etablere og bruke teknikker vi har lært fra "feedback" for å sikre at den nye 
 Behovene Drøft hvordan feedback bidrar til kontinuerlig forbedring og hvordan de kan integreres i ulike stadier av
 utviklingslivssyklusen.
 
-## LYKKE TIL OG HA DET GØY MED OPPGAVEN!
+I would employ AWS Cloudwatch to monitor and gather different metrics about what the users would do on my application. I would probably implement several timers to check waiting times and latency so I could see if my users would have to regularly wait for longer periods of time.
+I would also add several metrics to see what functionalities of my application is the most used, to see if there is something I can emulate in other parts of the application or maybe if I should consider specializing my application in that kind of functionality.
+I could also monitor which functionalities that performs poorly amongst the users and see where there is room for improvements.
+Additionally I would add several alarms, so I could quickly respond, should something unforseen happen and my service go down unexpectedly, or major changes has unforseen consequences.
+
+## Thank you for reading this far, and I wish you the best of luck onwards in your correction of exams(Unless this was you last one, then its break time)
