@@ -1,18 +1,6 @@
 # Eksamen PGR301 2023
 
-# Oppgave 1. Kjell's Python kode
-
 ## A. SAM & GitHub actions workflow
-
-Koden er skrevet som en AWS SAM applikasjon, og ligger i mappen "kjell" i dette repoet. Det er åpenbart at Kjell har
-tatt utgangspunkt i et "Hello World" SAM prosjekt og bare brukt navnet sitt som applikasjonsnavn.
-
-* Denne SAM-applikasjonen oppretter en S3 Bucket og du bør sørge for at den lages med ditt kandidatnavn, og du kan under eksamen bruke
-  denne bucketen til å laste opp egne bilder for å teste din egen applikasjon.
-* I ditt Cloud9-miljø, eller på din egen maskin, kan du bygge og deploye koden til AWS ved å bruke ```sam cli```
-* Det anbefales å teste dette før du fortsetter.
-
-Advarsel! Se opp for hardkoding ! Du må kanskje endre noe for å få deployet selv.
 
 ### Oppgave
 
@@ -31,10 +19,7 @@ Advarsel! Se opp for hardkoding ! Du må kanskje endre noe for å få deployet s
 
 ## B. Docker container
 
-Python er ikke et veldig etablert språk i VerneVokterene, og du vil gjerne at utviklere som ikke har Python
-installert på sin maskin skal kunne teste koden.
-
-### Opppgave
+### Oppgave
 
 Lag en Dockerfile som bygger et container image du kan bruke for å kjøre python koden.
 
@@ -51,17 +36,7 @@ docker run -e AWS_ACCESS_KEY_ID=XXX -e AWS_SECRET_ACCESS_KEY=YYY -e BUCKET_NAME=
 
 # Oppgave 2. Overgang til Java og Spring boot
 
-Du innser raskt at Python ikke er veien videre for et konkurransedyktig produkt og har selv laget starten på en
-Java-applikasjon som ligger i dette repoet. Applikasjonen er en Spring Boot applikasjon, som eksponerer et endepunkt
-
-```http://<host>:<port>/scan-ppe?bucketName=<bucketnavn>```
-
 ## A. Dockerfile
-
-* Test java-applikasjonen lokalt i ditt cloud9 miljø ved å stå i rotmappen til ditt repository, og kjøre
-  kommandoen ```mvn spring-boot:run```
-* Du kan teste applikasjonen i en terminal med ```curl localhost:8080/scan-ppe?bucketName=<din bucket>``` og se på
-  responsen.
 
 ### Oppgave
 
@@ -77,9 +52,6 @@ docker run -p 8080:8080 -e AWS_ACCESS_KEY_ID=XXX -e AWS_SECRET_ACCESS_KEY=YYY -e
 
 ## B. GitHub Actions workflow for container image og ECR
 
-Du skal nå automatisere prosessen med å bygge/kompilere og teste Java-applikasjonen.
-Lag en ny GitHub Actions Workflow fil, ikke gjenbruk den du lagde for Pythonkoden.
-
 ### Oppgave
 
 * Lag en GitHub actions workflow som ved hver push til main branch lager og publiserer et nytt Container image til et
@@ -92,9 +64,6 @@ Lag en ny GitHub Actions Workflow fil, ikke gjenbruk den du lagde for Pythonkode
 
 
 # Oppgave 3- Terraform, AWS Apprunner og Infrastruktur som kode
-
-Se på koden som ligger i infra katalogen, den inneholder kun en app_runner_service og en IAM roller som gjør denne i
-stand til å gjøre API kall mot AWS Rekognition og lese fra S3.
 
 ## A. Kodeendringer og forbedringer
 
@@ -121,46 +90,9 @@ If they are I would put them in a .tfvars file and add them as github secrets.
 * You will also need to change the ECR_REGISTRY and ECR_REPOSITORY in img-ecr-pipeline.yml where ECR_REGISTRY needs to be (xxx.dkr.ecr.<region>.amazonaws.com), and ECR_REPOSITORY needs to be the name of your ECR repository
 * Furthermore you will have to change the variable "arn" in variables.tf to your instance of the AppRunnerECRAccessRole, which you can copy from roles in the IAM part of AWS
 
-Når sensoren evaluerer oppgaven, vil han/hun:
-
-* Sjekke ditt repository og gå til fanen "Actions" på GitHub for å bekrefte at Workflows faktisk fungerer som de skal.
-* Vurdere drøftelsesoppgavene. Du må opprette en "Readme" for besvarelsen i ditt repository. Denne "Readme"-filen skal
-  inneholde en grundig beskrivelse og drøfting av oppgavene.
-* Sensoren vil opprette en "fork" (en kopi) av ditt repository og deretter kjøre GitHub Actions Workflows med sin egen
-  AWS- og GitHub-bruker for å bekrefte at alt fungerer som forventet.
-
-# Evaluering
-
-- Oppgave 1. Kjells Pythonkode - 20 Poeng
-- Oppgave 2. Overgang til Java og Spring Boot - 15 Poeng
-- Oppgave 3. Terraform, AWS Apprunner og IAC - 15 Poeng
-- Oppgave 4. Feedback -30 Poeng
-- Oppgave 5. Drøfteoppgaver - 20 poeng
-
-# Oppgavebeskrivelse
-
-I et pulserende teknologisamfunn på Grünerløkka, Oslo, har en livlig oppstart ved navn 'VerneVokterne' funnet
-sitt eget nisjeområde innenfor helsesektoren. De utvikler banebrytende programvare for bildebehandling som er
-designet
-for å sikre at helsepersonell alltid bruker personlig verneutstyr (PPE). Med en lidenskap for innovasjon og et sterkt
-ønske om å forbedre arbeidssikkerheten, har 'VerneVokterne' samlet et team av dyktige utviklere, engasjerte designere og
-visjonære produktledere.
-
-Selskapet hadde tidligere en veldig sentral utvikler som heter Kjell. Kjell hadde en unik tilnærming til kode,
-Dessverre var kvaliteten på Kjells kode, for å si det pent, "kreativ."
-
-Som nyansatt har du blitt gitt den utfordrende oppgaven å overta etter "Kjell," som ikke lenger er en del av selskapet.
-
-![Logo](img/logo.png "Assignment logo")
-
-
 # Oppgave 4. Feedback
 
 ## A. Utvid applikasjonen og legg inn "Måleinstrumenter"
-
-I denne oppgaven får dere stor kreativ frihet i å utforske tjenesten Rekognition. Derw skal lage ny og relevant funksjonalitet.
-Lag minst et nytt endepunkt, og utvid gjerne også den eksisterende koden med mer funksjonalitet.
-Se på dokumentasjonen; https://aws.amazon.com/rekognition/
 
 ### Oppgave
 
